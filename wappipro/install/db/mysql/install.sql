@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS wappipro_template
+(
+	ID		int(11)		NOT NULL auto_increment,
+	ACTIVE		CHAR(1)		DEFAULT 'Y' NOT NULL,
+	TIMESTAMP_CREATE_X datetime,
+	TIMESTAMP_CHANGE_X datetime,
+	EVENT_ID	int(11),
+	EVENT_MESSAGE_ID	int(11),
+    PHONE_TYPE int(1) DEFAULT 1 NOT NULL,
+	PHONE varchar(255),
+	EVENT_TYPE varchar(255),
+	MESSAGE text NULL,
+	PRIMARY KEY (ID)
+);

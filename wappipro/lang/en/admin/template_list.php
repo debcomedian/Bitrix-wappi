@@ -1,0 +1,21 @@
+<?
+$MESS["WAPPI_TEMPL_TITLE"] = "Message Templates Wappi";
+$MESS["POST_F_TIMESTAMP_CREATE_X"] = "Creation date";
+$MESS["POST_F_TIMESTAMP_CHANGE_X"] = "Modification date";
+$MESS["POST_F_ACTIVE"] = "Ativity";
+$MESS["POST_F_EVENT_ID"] = "Mail event";
+$MESS["POST_F_EVENT_MESSAGE_ID"] = "Mail template";
+$MESS["POST_F_PHONE"] = "Phone";
+$MESS["POST_F_PHONE_TYPE"] = "Get a phone from";
+$MESS["POST_F_MESSAGE"] = "Message template";
+$MESS["POST_ADD"] = "Add template";
+$MESS["POST_ADD_TITLE"] = "Add new message template";
+$MESS["EDIT"] = "Edit";
+$MESS["DELETE"] = "Delete";
+$MESS["DELETE_CONF"] = "Are you sure you want to delete the selected items?";
+$MESS["rub_save_error"] = "Save error:";
+$MESS["rub_del_err"] = "Delete error:";
+$MESS["rub_no_rubric"] = "No such template";
+$MESS["POST_F_PHONE_TYPE_1"] = "mail template fields/ phone number";
+$MESS["POST_F_PHONE_TYPE_2"] = "user fields";
+$MESS["POST_F_PHONE_TYPE_3"] = "order properties";

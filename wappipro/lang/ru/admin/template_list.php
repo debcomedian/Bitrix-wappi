@@ -1,0 +1,21 @@
+<?
+$MESS["WAPPI_TEMPL_TITLE"] = "Шаблоны сообщений Wappi";
+$MESS["POST_F_TIMESTAMP_CREATE_X"] = "Дата создания";
+$MESS["POST_F_TIMESTAMP_CHANGE_X"] = "Дата изменения";
+$MESS["POST_F_ACTIVE"] = "Активность";
+$MESS["POST_F_EVENT_ID"] = "Почтовое событие";
+$MESS["POST_F_EVENT_MESSAGE_ID"] = "Почтовый шаблон";
+$MESS["POST_F_PHONE"] = "Телефон";
+$MESS["POST_F_PHONE_TYPE"] = "Получить телефон из";
+$MESS["POST_F_MESSAGE"] = "Шаблон сообщения";
+$MESS["POST_ADD"] = "Добавить шаблон";
+$MESS["POST_ADD_TITLE"] = "Добавить новый шаблон сообщения";
+$MESS["EDIT"] = "Редактировать";
+$MESS["DELETE"] = "Удалить";
+$MESS["DELETE_CONF"] = "Вы уверены, что хотите удалить выбранные элементы?";
+$MESS["rub_save_error"] = "Ошибка сохранения:";
+$MESS["rub_del_err"] = "Ошибка удаления:";
+$MESS["rub_no_rubric"] = "Нет такого шаблона";
+$MESS["POST_F_PHONE_TYPE_1"] = "поля почтового шаблона/номера телефона";
+$MESS["POST_F_PHONE_TYPE_2"] = "поля пользователя";
+$MESS["POST_F_PHONE_TYPE_3"] = "свойства заказа";
