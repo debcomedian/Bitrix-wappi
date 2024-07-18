@@ -64,7 +64,7 @@ if($RIGHT >= "R"):
 				$phone = $_POST['send_sms']['phone'];
 				$phone = str_replace("\n", ',', $phone);
 				$phone = preg_replace('/\s/', '',$phone);
-				$text = "Test message from WappiPro";
+				$text = "Test message from Wappi";
 				WappiSender::SendSMS($phone, $text);
 			}
             ?>

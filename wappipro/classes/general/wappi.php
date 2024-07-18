@@ -193,7 +193,7 @@ class Wappi
 		$result_string = '';
 		$time_sub = new DateTime($data['payment_expired_at']);
 		$time_curr = new DateTime;
-		if ($time_sub < $time_curr) {
+		if ($time_sub > $time_curr) {
 			$this->_save_info();
 			$time_diff = $time_curr->diff($time_sub);
 			$days_diff = $time_diff->days;
