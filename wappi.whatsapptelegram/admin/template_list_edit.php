@@ -1,13 +1,11 @@
 <?
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php"); 
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/wappipro/include.php"); 
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/wappipro/prolog.php"); 
+require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/wappi.whatsapptelegram/include.php"); 
+require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/wappi.whatsapptelegram/prolog.php"); 
 
 use Bitrix\Main\Localization\Loc;
 
 Loc::loadMessages(__FILE__);
-
-//ClearVars();
 
 IncludeModuleLangFile(__FILE__);
 

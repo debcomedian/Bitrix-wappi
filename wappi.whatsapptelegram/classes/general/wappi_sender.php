@@ -5,7 +5,9 @@ Loc::loadMessages(__FILE__);
 
 class WappiSender  {
 
-	const MODULE_ID = 'wappipro';
+	private $error = [];
+
+	const MODULE_ID = 'wappi.whatsapptelegram';
 	
 	public function __construct() {
 		
@@ -15,7 +17,7 @@ class WappiSender  {
 	public static function CheckPhoneNumber($phone) {
 		$result = true;
 		if(!preg_match("/^[0-9]{11,14}+$/", $phone)) {
-			if(isset($this)) $this->error = Loc::getMessage("SMS_WRONG_PHONE");
+			self::$error = Loc::getMessage("SMS_WRONG_PHONE");
 			$result = false;
 		}
 		return $result;

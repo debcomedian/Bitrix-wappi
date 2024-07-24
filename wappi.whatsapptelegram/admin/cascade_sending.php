@@ -1,14 +1,14 @@
 <?
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php"); // Подключение пролога административной части
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/wappipro/include.php"); // Подключение модуля
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/wappipro/prolog.php"); // Подключение пролога модуля
+require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/wappi.whatsapptelegram/include.php"); // Подключение модуля
+require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/wappi.whatsapptelegram/prolog.php"); // Подключение пролога модуля
 
 use Bitrix\Main\Localization\Loc;
 
 Loc::loadMessages(__FILE__);
 
-$module_id = 'wappipro';
+$module_id = 'wappi.whatsapptelegram';
 
 $POST_RIGHT = $APPLICATION->GetGroupRight($module_id);
 if ($POST_RIGHT == "D")

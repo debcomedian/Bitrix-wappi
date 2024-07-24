@@ -6,12 +6,20 @@ use Bitrix\Main\Localization\Loc;
 
 Loc::loadMessages(__FILE__);
 
-class wappipro extends CModule
+class wappi_whatsapptelegram extends CModule
 {
+    public $MODULE_ID = 'wappi.whatsapptelegram';
+    public $MODULE_VERSION;
+    public $MODULE_VERSION_DATE;
+    public $MODULE_NAME;
+    public $MODULE_DESCRIPTION;
+    public $PARTNER_NAME;
+    public $PARTNER_URI;
+
     public function __construct()
     {   
         include(dirname(__FILE__) . "/version.php");
-        $this->MODULE_ID = 'wappipro';
+        $this->MODULE_ID = 'wappi.whatsapptelegram';
         $this->MODULE_NAME = Loc::getMessage('WAPPI_MODULE_NAME');
         $this->MODULE_DESCRIPTION = Loc::getMessage('WAPPI_MODULE_DESCRIPTION');
         $this->MODULE_VERSION = $arModuleVersion["VERSION"];
@@ -40,11 +48,11 @@ class wappipro extends CModule
         CopyDirFiles(__DIR__ . "/admin", $_SERVER["DOCUMENT_ROOT"] . "/bitrix/admin", true, true);
         
         file_put_contents($file = $_SERVER['DOCUMENT_ROOT'].'/bitrix/admin/wappipro_template_list_edit.php',
-        '<? require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/wappipro/admin/template_list_edit.php");?>');
+        '<? require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/wappi.whatsapptelegram/admin/template_list_edit.php");?>');
         file_put_contents($file = $_SERVER['DOCUMENT_ROOT'].'/bitrix/admin/wappipro_template_list.php',
-        '<? require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/wappipro/admin/template_list.php");?>');
+        '<? require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/wappi.whatsapptelegram/admin/template_list.php");?>');
         file_put_contents($file = $_SERVER['DOCUMENT_ROOT'].'/bitrix/admin/wappipro_сasсade_sending.php',
-        '<? require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/wappipro/admin/сasсade_sending.php");?>');
+        '<? require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/wappi.whatsapptelegram/admin/сasсade_sending.php");?>');
     }
 
     public function UnInstallFiles()

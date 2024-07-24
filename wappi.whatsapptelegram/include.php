@@ -1,8 +1,6 @@
 <?php
 
-use Bitrix\Main\EventManager;
 use Bitrix\Main\Localization\Loc;
-use Wappipro\Lib\Order;
 
 Loc::loadMessages(__FILE__);
 $MODULE_ID = basename(dirname(__FILE__));
