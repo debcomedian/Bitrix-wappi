@@ -1,8 +1,8 @@
 <?
 
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php"); // ������ ����� ������
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/wappipro/include.php"); // ������������� ������
-require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/wappipro/prolog.php"); // ������ ������
+require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_admin_before.php");
+require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/wappi.whatsapptelegram/include.php");
+require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/wappi.whatsapptelegram/prolog.php");
 
 use Bitrix\Main\Localization\Loc;
 
@@ -14,8 +14,8 @@ if ($POST_RIGHT == "D")
 	$APPLICATION->AuthForm(Loc::getMessage("ACCESS_DENIED"));
 
 $sTableID = "tbl_templ"; // ID �������
-$oSort = new CAdminSorting($sTableID, "ID", "desc"); // ������ ����������
-$lAdmin = new CAdminList($sTableID, $oSort); // �������� ������ ������
+$oSort = new CAdminSorting($sTableID, "ID", "desc");
+$lAdmin = new CAdminList($sTableID, $oSort);
 
 function CheckFilter()
 {
@@ -23,7 +23,7 @@ function CheckFilter()
   foreach ($FilterArr as $f) global $$f;
 
 
-  return count($lAdmin->arFilterErrors)==0; // ���� ������ ����, ������ false;
+  return count($lAdmin->arFilterErrors)==0;
 }
 
 $FilterArr = Array(
