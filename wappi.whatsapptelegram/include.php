@@ -3,7 +3,7 @@
 use Bitrix\Main\Localization\Loc;
 
 Loc::loadMessages(__FILE__);
-$MODULE_ID = basename(dirname(__FILE__));
+$MODULE_ID = 'wappi.whatsapptelegram';
 CModule::AddAutoloadClasses(
 	$MODULE_ID,
 	array(
@@ -20,7 +20,7 @@ Class WappiProInclude
 		if($GLOBALS['APPLICATION']->GetGroupRight("main") < "R")
 			return;
 
-		$MODULE_ID = basename(dirname(__FILE__));
+		$MODULE_ID = 'wappi.whatsapptelegram';
 		$aMenu = array(
 			"parent_menu" => "global_menu_services",
 			"section" => $MODULE_ID,
@@ -34,12 +34,12 @@ Class WappiProInclude
 			"items" => array(
 				array(
 					"text" => Loc::getMessage("MENU_NAME_TEMPL_LIST"),
-					"url" => $MODULE_ID."_template_list.php?lang=".LANGUAGE_ID,
+					"url" => "wappipro_template_list.php?lang=".LANGUAGE_ID,
 					"title" => Loc::getMessage("MENU_TITLE_TEMPL_LIST")
 				),
 				array(
 					"text" => Loc::getMessage("MENU_NAME_TEMPL_LIST2"),
-					"url" => $MODULE_ID."_сasсade_sending.php?lang=".LANGUAGE_ID,
+					"url" => "wappipro_cascade_sending.php?lang=".LANGUAGE_ID,
 					"title" => Loc::getMessage("MENU_TITLE_TEMPL_LIST2")
 				)
 			)

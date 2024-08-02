@@ -5,7 +5,7 @@ use Bitrix\Main\Localization\Loc;
 
 Loc::loadMessages(__FILE__);
 
-$module_id = "wappipro";
+$module_id = 'wappi.whatsapptelegram';
 $RIGHT = $APPLICATION->GetGroupRight($module_id);
 
 if($RIGHT >= "R"):
@@ -114,5 +114,4 @@ if($REQUEST_METHOD == "POST" && strlen($Update.$Apply.$RestoreDefaults) > 0 && $
 
 	}
 }
-
 ?>

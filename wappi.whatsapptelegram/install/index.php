@@ -51,8 +51,8 @@ class wappi_whatsapptelegram extends CModule
         '<? require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/wappi.whatsapptelegram/admin/template_list_edit.php");?>');
         file_put_contents($file = $_SERVER['DOCUMENT_ROOT'].'/bitrix/admin/wappipro_template_list.php',
         '<? require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/wappi.whatsapptelegram/admin/template_list.php");?>');
-        file_put_contents($file = $_SERVER['DOCUMENT_ROOT'].'/bitrix/admin/wappipro_сasсade_sending.php',
-        '<? require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/wappi.whatsapptelegram/admin/сasсade_sending.php");?>');
+        file_put_contents($file = $_SERVER['DOCUMENT_ROOT'].'/bitrix/admin/wappipro_cascade_sending.php',
+        '<? require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/wappi.whatsapptelegram/admin/cascade_sending.php");?>');
     }
 
     public function UnInstallFiles()
@@ -60,7 +60,7 @@ class wappi_whatsapptelegram extends CModule
         DeleteDirFilesEx("/bitrix/components/wappipro");
         DeleteDirFilesEx("/bitrix/admin/wappipro_template_list_edit.php");
         DeleteDirFilesEx("/bitrix/admin/wappipro_template_list.php");
-        DeleteDirFilesEx("/bitrix/admin/wappipro_сasсade_sending.php");
+        DeleteDirFilesEx("/bitrix/admin/wappipro_cascade_sending.php");
     }
 
     public function InstallDB($arParams = array())
