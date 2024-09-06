@@ -15,67 +15,66 @@ class WappiTemplate
 		$strSqlSearch = "";
 		$bIsLang = false;
 		
+		foreach($arFilter as $key=>$val)
+		{
+			if (!is_array($val) && (strlen($val)<=0 || $val=="NOT_REF"))
+				continue;
+			switch(strtoupper($key))
+			{
+				case "ACTIVE":
+					$arSqlSearch[] = ($val=="Y") ? "T.ACTIVE = 'Y'" : "T.ACTIVE = 'N'";
+					break;
+				case "ID":
+					$match = ($arFilter[$key."_EXACT_MATCH"]=="N") ? "Y" : "N";
+					$arSqlSearch[] = GetFilterQuery("T.ID", $val, $match);
+					break;
+				case "EVENT_TYPE":
+					$arSqlSearch[] = "T.EVENT_TYPE = '".$val."'";
+					break;
+				case "EVENT_MESSAGE_ID":
+					$arSqlSearch[] = "T.EVENT_MESSAGE_ID = '".$val."'";
+					break;
+				case "PHONE_TYPE":
+					$arSqlSearch[] = "T.PHONE_TYPE = '".$val."'";
+					break;
+			}
+		}
 		
-			foreach($arFilter as $key=>$val)
+		$arOrder = array();
+		foreach($aSort as $key => $ord)
+		{
+			$key = strtoupper($key);
+			$ord = (strtoupper($ord) <> "ASC"? "DESC": "ASC");
+			switch($key)
 			{
-				if (!is_array($val) && (strlen($val)<=0 || $val=="NOT_REF"))
-					continue;
-				switch(strtoupper($key))
-				{
-					case "ACTIVE":
-						$arSqlSearch[] = ($val=="Y") ? "T.ACTIVE = 'Y'" : "T.ACTIVE = 'N'";
-						break;
-					case "ID":
-						$match = ($arFilter[$key."_EXACT_MATCH"]=="N") ? "Y" : "N";
-						$arSqlSearch[] = GetFilterQuery("T.ID", $val, $match);
-						break;
-					case "EVENT_TYPE":
-						$arSqlSearch[] = "T.EVENT_TYPE = '".$val."'";
-						break;
-					case "EVENT_MESSAGE_ID":
-						$arSqlSearch[] = "T.EVENT_MESSAGE_ID = '".$val."'";
-						break;
-					case "PHONE_TYPE":
-						$arSqlSearch[] = "T.PHONE_TYPE = '".$val."'";
-						break;
-				}
+				case "ID":		$arOrder[$key] = "T.ID ".$ord; break;
+				case "TIMESTAMP_CREATE_X":	$arOrder[$key] = "T.TIMESTAMP_CREATE_X ".$ord; break;
+				case "TIMESTAMP_CHANGE_X":	$arOrder[$key] = "T.TIMESTAMP_CHANGE_X ".$ord; break;
+				case "ACTIVE":	$arOrder[$key] = "T.ACTIVE ".$ord; break;
 			}
-			
-			$arOrder = array();
-			foreach($aSort as $key => $ord)
-			{
-				$key = strtoupper($key);
-				$ord = (strtoupper($ord) <> "ASC"? "DESC": "ASC");
-				switch($key)
-				{
-					case "ID":		$arOrder[$key] = "T.ID ".$ord; break;
-					case "TIMESTAMP_CREATE_X":	$arOrder[$key] = "T.TIMESTAMP_CREATE_X ".$ord; break;
-					case "TIMESTAMP_CHANGE_X":	$arOrder[$key] = "T.TIMESTAMP_CHANGE_X ".$ord; break;
-					case "ACTIVE":	$arOrder[$key] = "T.ACTIVE ".$ord; break;
-				}
-			}
-			if(count($arOrder) <= 0)
-			{
-				$arOrder["ID"] = "T.ID DESC";
-			}
-			$strSqlOrder = " ORDER BY ".implode(", ", $arOrder);
+		}
+		if(count($arOrder) <= 0)
+		{
+			$arOrder["ID"] = "T.ID DESC";
+		}
+		$strSqlOrder = " ORDER BY ".implode(", ", $arOrder);
 
-			$strSqlSearch = GetFilterSqlSearch($arSqlSearch);
-			
-			$strSql =
-				"SELECT T.ID, T.ACTIVE,  T.EVENT_ID,  T.EVENT_TYPE, T.EVENT_MESSAGE_ID, T.PHONE, T.MESSAGE, T.PHONE_TYPE,
-				".$DB->DateToCharFunction("T.TIMESTAMP_CREATE_X").
-				" TIMESTAMP_CREATE_X, ".
-				$DB->DateToCharFunction("T.TIMESTAMP_CHANGE_X").
-				" TIMESTAMP_CHANGE_X ".
-				"FROM wappipro_template T ".
-				"WHERE ".
-				$strSqlSearch.
-				$strSqlOrder;
+		$strSqlSearch = GetFilterSqlSearch($arSqlSearch);
+		
+		$strSql =
+			"SELECT T.ID, T.ACTIVE,  T.EVENT_ID,  T.EVENT_TYPE, T.EVENT_MESSAGE_ID, T.PHONE, T.MESSAGE, T.PHONE_TYPE,
+			".$DB->DateToCharFunction("T.TIMESTAMP_CREATE_X").
+			" TIMESTAMP_CREATE_X, ".
+			$DB->DateToCharFunction("T.TIMESTAMP_CHANGE_X").
+			" TIMESTAMP_CHANGE_X ".
+			"FROM wappipro_template T ".
+			"WHERE ".
+			$strSqlSearch.
+			$strSqlOrder;
 
-			$res = $DB->Query($strSql, false, $err_mess.__LINE__);
-			$res->is_filtered = (IsFiltered($strSqlSearch));
-			return $res;
+		$res = $DB->Query($strSql, false, $err_mess.__LINE__);
+		$res->is_filtered = (IsFiltered($strSqlSearch));
+		return $res;
 	}
 	
 	public static function GetByID($ID)

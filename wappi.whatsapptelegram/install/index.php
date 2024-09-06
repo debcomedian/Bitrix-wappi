@@ -77,8 +77,8 @@ class wappi_whatsapptelegram extends CModule
 		else
 		{
 			RegisterModuleDependences('main', 'OnBuildGlobalMenu', $this->MODULE_ID, 'WappiProInclude', 'OnBuildGlobalMenu');
-			RegisterModuleDependences('main', 'OnBeforeEventAdd', $this->MODULE_ID, 'WappiProInclude', 'SmsisBeforeEventAddHandler');
-			RegisterModuleDependences('main', 'OnEventMessageDelete', $this->MODULE_ID, 'WappiProInclude', 'SmsisEventMessageDeleteHandler');
+			RegisterModuleDependences('main', 'OnBeforeEventAdd', $this->MODULE_ID, 'WappiProInclude', 'WappiBeforeEventAddHandler');
+			RegisterModuleDependences('main', 'OnEventMessageDelete', $this->MODULE_ID, 'WappiProInclude', 'WappiEventMessageDeleteHandler');
 		}
 		return true;
 	}
