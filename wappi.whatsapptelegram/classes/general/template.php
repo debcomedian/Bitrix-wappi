@@ -9,8 +9,8 @@ class WappiTemplate
 	
 	public static function GetList($aSort=Array(), $arFilter=Array())
 	{
-		$err_mess = "<br>Class: WappiTemplate<br>File: ".__FILE__."<br>Function: GetList<br>Line: ";
 		global $DB, $USER;
+		$err_mess = "<br>Class: WappiTemplate<br>File: ".__FILE__."<br>Function: GetList<br>Line: ";
 		$arSqlSearch = Array();
 		$strSqlSearch = "";
 		$bIsLang = false;
@@ -80,6 +80,7 @@ class WappiTemplate
 	public static function GetByID($ID)
 	{
 		global $DB;
+		$DB->Query("SET NAMES 'utf8mb4'");
 		$ID = intval($ID);
 
 		$strSql =
@@ -98,6 +99,7 @@ class WappiTemplate
 	public static function CheckFields($arFields)
 	{
 		global $DB;
+		$DB->Query("SET NAMES 'utf8mb4'");
 		self::$LAST_ERROR = "";
 		$aMsg = array();
 		
@@ -142,6 +144,7 @@ class WappiTemplate
 	public static function Update($ID, $arFields)
 	{
 		global $DB, $USER;
+		$DB->Query("SET NAMES 'utf8mb4'");
 		$ID = intval($ID);
 		
 		$arFields['TIMESTAMP_CHANGE_X'] = GetTime(time(), "FULL");
@@ -161,6 +164,7 @@ class WappiTemplate
 	public static function Add($arFields)
 	{
 		global $DB;
+		$DB->Query("SET NAMES 'utf8mb4'");
 		$arFields['TIMESTAMP_CREATE_X'] = GetTime(time(), "FULL");
 		$arFields['TIMESTAMP_CHANGE_X'] = GetTime(time(), "FULL");
 		if(!self::CheckFields($arFields))
@@ -173,6 +177,7 @@ class WappiTemplate
 	public static function Delete($ID)
 	{
 		global $DB;
+		$DB->Query("SET NAMES 'utf8mb4'");
 
 		if (!empty($ID))
 		{

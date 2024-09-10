@@ -63,25 +63,44 @@ class wappi_whatsapptelegram extends CModule
         DeleteDirFilesEx("/bitrix/admin/wappipro_cascade_sending.php");
     }
 
-    public function InstallDB($arParams = array())
-	{
-		global $DB, $DBType, $APPLICATION;
-		$this->errors = false;
-		
-		$this->errors = $DB->RunSQLBatch($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/" . $this->MODULE_ID . "/install/db/" . $DBType . "/install.sql");
+   public function InstallDB($arParams = array())
+    {
+        global $DB, $DBType, $APPLICATION;
+        $this->errors = false;
+        
+        $this->errors = $DB->RunSQLBatch($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/" . $this->MODULE_ID . "/install/db/" . $DBType . "/install.sql");
 
-		if($this->errors !== false){
-			$APPLICATION->ThrowException(implode("<br>", $this->errors));
-			return false;
-		}
-		else
-		{
-			RegisterModuleDependences('main', 'OnBuildGlobalMenu', $this->MODULE_ID, 'WappiProInclude', 'OnBuildGlobalMenu');
-			RegisterModuleDependences('main', 'OnBeforeEventAdd', $this->MODULE_ID, 'WappiProInclude', 'WappiBeforeEventAddHandler');
-			RegisterModuleDependences('main', 'OnEventMessageDelete', $this->MODULE_ID, 'WappiProInclude', 'WappiEventMessageDeleteHandler');
-		}
-		return true;
-	}
+        if ($this->errors !== false) {
+            $APPLICATION->ThrowException(implode("<br>", $this->errors));
+            return false;
+        } else {
+            RegisterModuleDependences('main', 'OnBuildGlobalMenu', $this->MODULE_ID, 'WappiProInclude', 'OnBuildGlobalMenu');
+            RegisterModuleDependences('main', 'OnBeforeEventAdd', $this->MODULE_ID, 'WappiProInclude', 'WappiBeforeEventAddHandler');
+            RegisterModuleDependences('main', 'OnEventMessageDelete', $this->MODULE_ID, 'WappiProInclude', 'WappiEventMessageDeleteHandler');
+
+            $this->SetDefaultRights();
+        }
+        return true;
+    }
+
+    public function SetDefaultRights()
+    {
+        global $APPLICATION;
+        $module_id = $this->MODULE_ID;
+
+        $dbGroups = CGroup::GetList($by = "c_sort", $order = "asc", array("ACTIVE" => "Y"));
+        
+        while ($arGroup = $dbGroups->Fetch()) {
+            $groupId = $arGroup["ID"];
+            
+            if ($groupId == 1) {
+                $APPLICATION->SetGroupRight($module_id, $groupId, "W");
+            } else {
+                $APPLICATION->SetGroupRight($module_id, $groupId, "R");
+            }
+        }
+    }
+
 
     public function UnInstallDB($arParams = array())
 	{
@@ -98,11 +117,12 @@ class wappi_whatsapptelegram extends CModule
 		UnRegisterModuleDependences('main', 'OnBuildGlobalMenu', $this->MODULE_ID, 'WappiProInclude', 'OnBuildGlobalMenu');
 		UnRegisterModuleDependences('main', 'OnBeforeEventAdd', $this->MODULE_ID, 'WappiProInclude', 'SmsisBeforeEventAddHandler');
 		UnRegisterModuleDependences('main', 'OnEventMessageDelete', $this->MODULE_ID, 'WappiProInclude', 'SmsisEventMessageDeleteHandler');
-		
+		        
 		if($this->errors !== false){
 			$APPLICATION->ThrowException(implode("<br>", $this->errors));
 			return false;
 		}
+        $APPLICATION->DelGroupRight($this->MODULE_ID);
 		return true;
     }
 }

@@ -68,9 +68,10 @@ Class WappiProInclude
 					$text = false;
 
 					if ($arRes['PHONE_TYPE'] == 3) {
-						$dbOrderProps = CSaleOrderPropsValue::GetList(
+						$orderId = !empty($arFields['ORDER_REAL_ID']) ? $arFields['ORDER_REAL_ID'] : $arFields['ORDER_ID'];
+                    	$dbOrderProps = CSaleOrderPropsValue::GetList(
 							array(),
-							array("ORDER_ID" => $arFields['ORDER_ID'], "CODE" => $arRes['PHONE']),
+							array("ORDER_ID" => $orderId, "CODE" => $arRes['PHONE']),
 							false,
 							false
 						);

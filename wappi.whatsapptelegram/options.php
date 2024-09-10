@@ -33,13 +33,13 @@ if($RIGHT >= "R"):
 		<tr>
 			<td width="25%"><?=Loc::getMessage("WAPPI_TOKEN")?></td>
 			<td width="75%">
-				<input require type="text" size="40" value="<?=COption::GetOptionString($module_id, 'tokenApi') ?>" name="settings[tokenApi]" />
+				<input required type="text" size="40" value="<?=COption::GetOptionString($module_id, 'tokenApi') ?>" name="settings[tokenApi]" />
 			</td>
 		</tr>
 		<tr>
 			<td width="25%"><?=Loc::getMessage("WAPPI_PROFILE")?></td>
 			<td width="75%">
-				<input require type="text" size="10" value="<?=COption::GetOptionString($module_id, 'profile_id') ?>" name="settings[profile_id]" />
+				<input required type="text" size="10" value="<?=COption::GetOptionString($module_id, 'profile_id') ?>" name="settings[profile_id]" />
             </td>
 		</tr>
         <tr>
@@ -72,7 +72,7 @@ if($RIGHT >= "R"):
 		</tr>
 		<tr>
 			<td width="25%"><?=Loc::getMessage("WAPPI_NUMBER_PHONES")?></td>
-			<td><input required name="send_sms[phone]" pattern="^[0-9]{11,14}$"></td>
+			<td><input name="send_sms[phone]" pattern="^[0-9]{11,14}$"></td>
 		</tr>
 		<? $tabControl->BeginNextTab() ?>
 		<?require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/admin/group_rights.php");?>
