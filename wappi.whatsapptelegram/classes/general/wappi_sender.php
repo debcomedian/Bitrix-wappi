@@ -5,7 +5,7 @@ Loc::loadMessages(__FILE__);
 
 class WappiSender  {
 
-	private $error = [];
+	private static $error = [];
 
 	const MODULE_ID = 'wappi.whatsapptelegram';
 	
@@ -42,10 +42,10 @@ class WappiSender  {
 	{
 		include_once("wappi.php");
 
-		if(strlen(trim($message))<=0) return false;
+		if(strlen(trim($message))<=0) return null;
 
 		$tokenApi = COption::GetOptionString(self::MODULE_ID, 'tokenApi'); 
-		$profile_id = COption::GetOptionString(self::MODULE_ID, 'profile_id');  
+		$profile_id = COption::GetOptionString(self::MODULE_ID, 'profile_id');
 		
 		$wappi = new Wappi($tokenApi, $profile_id);
 		$wappi->SetCharset(LANG_CHARSET);

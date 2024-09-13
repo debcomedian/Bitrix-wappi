@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS wappipro_template
     PHONE_TYPE int(1) DEFAULT 1 NOT NULL,
 	PHONE varchar(255),
 	EVENT_TYPE varchar(255),
-	MESSAGE text NULL,
+	MESSAGE TEXT NULL,
 	PRIMARY KEY (ID)
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;
+
+ALTER TABLE wappipro_template CONVERT TO CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

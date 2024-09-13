@@ -374,9 +374,7 @@ $tabControl->BeginNextTab();
 	</tr>
 	<tr>
 		<td>
-			<?//if(!$bEvTpl):?>
-				<textarea style='width:95%;resize:vertical;' rows="20" name='MESSAGE' onfocus="t=this"><?=$str_MESSAGE?></textarea>
-			<?//endif;?>
+			<textarea style='width:95%;resize:vertical;' rows="20" name='MESSAGE' onfocus="t=this"><?=$str_MESSAGE?></textarea>
 		</td>
 		<td>
 			<textarea readonly style='width:95%;resize:vertical;' rows="20" ><?=$messTemplate?></textarea>

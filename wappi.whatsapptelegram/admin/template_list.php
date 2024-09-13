@@ -10,6 +10,7 @@ Loc::loadMessages(__FILE__);
 
 
 $POST_RIGHT = $APPLICATION->GetGroupRight(ADMIN_MODULE_NAME);
+
 if ($POST_RIGHT == "D")
 	$APPLICATION->AuthForm(Loc::getMessage("ACCESS_DENIED"));
 

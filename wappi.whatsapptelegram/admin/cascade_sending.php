@@ -10,7 +10,8 @@ Loc::loadMessages(__FILE__);
 
 $module_id = 'wappi.whatsapptelegram';
 
-$POST_RIGHT = $APPLICATION->GetGroupRight($module_id);
+$POST_RIGHT = $APPLICATION->GetGroupRight(ADMIN_MODULE_NAME);
+
 if ($POST_RIGHT == "D")
     $APPLICATION->AuthForm(Loc::getMessage("ACCESS_DENIED"));
 
