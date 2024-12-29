@@ -39,7 +39,7 @@ if($RIGHT >= "R"):
 		<tr>
 			<td width="25%"><?=Loc::getMessage("WAPPI_PROFILE")?></td>
 			<td width="75%">
-				<input required type="text" size="10" value="<?=COption::GetOptionString($module_id, 'profile_id') ?>" name="settings[profile_id]" />
+				<input required type="text" size="20" value="<?=COption::GetOptionString($module_id, 'profile_id') ?>" name="settings[profile_id]" />
             </td>
 		</tr>
         <tr>
@@ -55,17 +55,17 @@ if($RIGHT >= "R"):
             </td>
 			<td width="25%" class="balance">
 			<?
-			if(IsModuleInstalled($module_id))
-			{
-				$status_string = WappiSender::GetApiStatus();
-				echo $status_string;
-			}
 			if(!empty($_POST['send_sms'])){
 				$phone = $_POST['send_sms']['phone'];
 				$phone = str_replace("\n", ',', $phone);
 				$phone = preg_replace('/\s/', '',$phone);
 				$text = "Test message from Wappi";
 				WappiSender::SendSMS($phone, $text);
+			}
+			if(IsModuleInstalled($module_id))
+			{
+				$status_string = WappiSender::GetApiStatus();	
+				echo $status_string;
 			}
             ?>
 			</td>
@@ -97,9 +97,7 @@ if($REQUEST_METHOD == "POST" && strlen($Update.$Apply.$RestoreDefaults) > 0 && $
 			$APPLICATION->DelGroupRight($module_id, array($zr["ID"]));
 
 		$redirect_to_url = $APPLICATION->GetCurPage()."?mid=".urlencode($mid)."&lang=".urlencode(LANGUAGE_ID)."&back_url_settings=".urlencode($_REQUEST["back_url_settings"])."&".$tabControl->ActiveTabParam();
-	} 
-	else 
-	{
+	} else {
 		foreach ($_POST['settings'] as $settingName => $settingValue) {
 			if($settingName == 'profile_id' && strlen(trim($settingValue)) == 0)
 			{
