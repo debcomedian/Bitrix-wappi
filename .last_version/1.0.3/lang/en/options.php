@@ -9,7 +9,7 @@ $MESS["WAPPI_TAB_DOC"] = "API";
 $MESS["WAPPI_TAB_TITLE_DOC"] = "How to work with the module";
 $MESS["WAPPI_TOKEN"] = "Token API";
 $MESS["WAPPI_PROFILE"] = "Profile/Cascade ID";
-$MESS["WAPPI_PROFILE_WARNING"] = "You can find the API token and profile ID in your wappi.pro account – <a target='_blank' href=\"http://wappi.pro/dashboard\">sign up</a><br> You can send automatic notifications from your personal Whatsapp or Telegram number or use send messages service.";
+$MESS["WAPPI_PROFILE_WARNING"] = "You can find the API token and profile ID in your wappi.pro account – <a target='_blank' href=\"http://wappi.pro/dashboard\">sign up</a><br> You can send automatic notifications from your personal Whatsapp or Telegram number or use send messages service. <br/> You can use the cascade Whatsapp/Telegram/SMS. To do this, please authorize the desired profiles in Wappi.pro, then add Cascade. <br/> Cascade ID insert on this page.";
 $MESS["WAPPI_API_STATUS"] = "Profile status: ";
 $MESS["WAPPI_API"] = "Using API";
 $MESS["WAPPI_ERROR_GET_DATA"] = "Unable to receive data";
