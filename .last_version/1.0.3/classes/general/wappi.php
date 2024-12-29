@@ -117,40 +117,49 @@ class Wappi
 	public function SendSMS($phones, $message, $translit = 0, $time = 0, $id = 0, $format = 0, $query = '')
 	{
 		$platform = COption::GetOptionString('wappipro', 'platform');
-		$url = 'https://wappi.pro/' . $platform . 'api/sync/message/send?profile_id=' . $this->profile_id;
-		$ret = $this->ReadURL($url, $phones, $message);
-		return $ret;
-	}
-
-	private function ReadURL($url, $phones, $message)
-	{
-		$ret = '';
-		$phone_array = explode(',', $phones); 
-		foreach ($phone_array as $phone) {
-			$message_json = json_encode(array(
-				'recipient' => $phone,
-				'body' => $message
-			));
-
-			$c = curl_init();
-			curl_setopt($c, CURLOPT_URL, $url);
-			curl_setopt($c, CURLOPT_POST, true);
-			curl_setopt($c, CURLOPT_POSTFIELDS, $message_json);
-			curl_setopt($c, CURLOPT_HTTPHEADER, array(
-				'Accept: application/json',
-				'Authorization: ' . $this->tokenApi,
-				'Content-Type: application/json'
-			));
-			curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
-
-        	$ret = curl_exec($c);
+		if (strlen($this->profile_id) != 20) {
+			$url = 'https://wappi.pro/' . $platform . 'api/sync/message/send?profile_id=' . $this->profile_id;
+			$phone_array = explode(',', $phones); 
+			foreach ($phone_array as $phone) {
+				$message_json = json_encode(array(
+					'recipient' => $phone,
+					'body' => $message
+				));
+			}
+		} else {
+			$url = 'https://wappi.pro/csender/cascade/send';
+			$phone_array = explode(',', $phones); 
+			foreach ($phone_array as $phone) {
+				$message_json = json_encode(array(
+					'recipient' => $phone,
+					'body' => $message,
+					'cascade_id' => $this->profile_id
+				));
+			}
 		}
+		$c = curl_init();
+		curl_setopt($c, CURLOPT_URL, $url);
+		curl_setopt($c, CURLOPT_POST, true);
+		curl_setopt($c, CURLOPT_POSTFIELDS, $message_json);
+		curl_setopt($c, CURLOPT_HTTPHEADER, array(
+			'Accept: application/json',
+			'Authorization: ' . $this->tokenApi,
+			'Content-Type: application/json'
+		));
+		curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+
+		$ret = curl_exec($c);
 		return $ret;
 	}
 
 	public function GetApiStatus()
 	{
-		$url = 'https://wappi.pro/api/sync/get/status?profile_id=' . $this->profile_id;
+		if (strlen($this->profile_id) != 20) {
+			$url = 'https://wappi.pro/api/sync/get/status?profile_id=';
+		} else {
+			$url = 'https://wappi.pro/csender/cascade/get?cascade_id=';
+		}
+		$url .= $this->profile_id;
 
 		if (!$this->tokenApi) {
 			return Loc::getMessage("WAPPI_EMPTY_TOKEN_INFO");
@@ -177,11 +186,12 @@ class Wappi
 			if (!(json_last_error() === JSON_ERROR_NONE)) {
 				$result_string = Loc::getMessage("WAPPI_JSON_ERROR") . json_last_error_msg() . '</span>';
 			} else if (sizeof($data) > 2) {
-				$result_string = $this->_parse_time($data);
-				
 				$platform = $data['platform'];
 				$platform = ($platform === 'tg')? 't': '';
 				COption::SetOptionString('wappipro', 'platform', $platform);
+				$result_string = $this->_parse_time($data);
+			} else if (strlen($this->profile_id) == 20) {
+				$result_string = $this->_output_cascade($data);
 			} else {
 				$result_string = Loc::getMessage("WAPPI_INVALID_TOKEN_OR_PROFILE");
 			}
@@ -228,6 +238,42 @@ class Wappi
 		}
 		return $result_string;		
 	}
+
+	private function _output_cascade($data) {
+		if (isset($data['cascade']) && isset($data['cascade']['order'])) {
+			$cascade = $data['cascade'];
+			$cascade_name = $cascade['name'] ?? '';
+			$order = $cascade['order'];
+		
+			$platforms = array_map(function ($item) {
+				$platform = $item['platform'] ?? '';
+				$profile_uuid = $item['profile_uuid'] ?? '';
+		
+				$platform_display = '';
+                switch ($platform) {
+                    case 'wz':
+                        $platform_display = 'WhatsApp';
+                        break;
+                    case 'tg':
+                        $platform_display = 'Telegram';
+                        break;
+                    case 'sms':
+                        $platform_display = Loc::getMessage('SMS');
+                        break;
+                    default:
+                        $platform_display = $platform;
+                        break;
+                }
+				return "{$platform_display} {$profile_uuid}";
+			}, $order);
+		
+			$platforms_list = implode(', ', $platforms);
+		
+			return Loc::getMessage('CASCADE') . " \"{$cascade_name}\": {$platforms_list}";
+		} else {
+			return Loc::getMessage('CASCADE_NO_DATA');
+		}
+    }
 
 	private function _save_info() {
 		$message_json = json_encode(array(
