@@ -41,16 +41,27 @@ class WappiSender  {
 	public static function SendSMS($phone, $message, $translit = 0)
 	{
 		include_once("wappi.php");
-
-		if(strlen(trim($message))<=0) return null;
-
+	
+		if (strlen(trim($message)) <= 0) {
+			return null;
+		}
+	
+		$message = htmlspecialchars_decode($message, ENT_QUOTES);
+		$message = html_entity_decode($message, ENT_QUOTES | ENT_HTML5);
+	
+		$message = strip_tags($message);
+	
+		$message = trim($message);
+	
 		$tokenApi = COption::GetOptionString(self::MODULE_ID, 'tokenApi'); 
 		$profile_id = COption::GetOptionString(self::MODULE_ID, 'profile_id');
-		
+	
 		$wappi = new Wappi($tokenApi, $profile_id);
 		$wappi->SetCharset(LANG_CHARSET);
+	
 		return $wappi->SendSMS($phone, $message, $translit);
 	}
+	
 
     public static function GettokenApi()
     {
