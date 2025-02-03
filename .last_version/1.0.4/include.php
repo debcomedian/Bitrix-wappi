@@ -161,6 +161,9 @@ Class WappiProInclude
 
             if ($phones) {
                 foreach ($arFields as $key => $value) {
+                    if (is_array($value)) {
+                        $value = implode(',', $value);
+                    }
                     $text = str_replace("#{$key}#", $value, $text);
                 }
                 WappiSender::SendSMS($phones, $text);
