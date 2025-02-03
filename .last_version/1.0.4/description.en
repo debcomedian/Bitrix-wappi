@@ -1,2 +1,2 @@
-Added html character conversion in templates
-Fixed bug when using "User fields" in templates
+Fixed invalid button name in template
+Improved field handler in templates
