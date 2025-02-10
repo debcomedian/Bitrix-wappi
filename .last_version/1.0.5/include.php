@@ -73,7 +73,7 @@ Class WappiProInclude
                     if (WappiSender::CheckPhoneNumber($template['PHONE'])) {
                         $phones = $template['PHONE'];
                     } else {
-                        $code = $template['PHONE'];
+                        $code = str_replace('#', '', $template['PHONE']);
                         if (preg_match('/#' . preg_quote($code, '/') . '#/', $template['MESSAGE'])) {
                             if (isset($arFields[$code]) && !empty($arFields[$code])) {
                                 $phones = $arFields[$code];
