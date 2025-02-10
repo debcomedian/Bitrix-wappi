@@ -1,2 +1,1 @@
-Fixed invalid button name in template
-Improved field handler in templates
+Fixed error when getting phone from template field

@@ -72,10 +72,16 @@ Class WappiProInclude
                 case 1:
                     if (WappiSender::CheckPhoneNumber($template['PHONE'])) {
                         $phones = $template['PHONE'];
-                    } elseif (isset($arFields[$template['PHONE']])) {
-                        $phones = $arFields[$template['PHONE']];
+                    } else {
+                        $code = $template['PHONE'];
+                        if (preg_match('/#' . preg_quote($code, '/') . '#/', $template['MESSAGE'])) {
+                            if (isset($arFields[$code]) && !empty($arFields[$code])) {
+                                $phones = $arFields[$code];
+                            }
+                        } else {
+                            $phones = $template['PHONE'];
+                        }
                     }
-
                     break;
 
                 case 2:
