@@ -1,1 +1,1 @@
-Fixed error when getting phone from template field
+Added static url parameter to request to send message

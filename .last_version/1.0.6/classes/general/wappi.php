@@ -118,7 +118,7 @@ class Wappi
 	{
 		$platform = COption::GetOptionString('wappipro', 'platform');
 		if (strlen($this->profile_id) != 20) {
-			$url = 'https://wappi.pro/' . $platform . 'api/sync/message/send?profile_id=' . $this->profile_id;
+			$url = 'https://wappi.pro/' . $platform . 'api/sync/message/send?profile_id=' . $this->profile_id . '&bot_id=byc';
 			$phone_array = explode(',', $phones); 
 			foreach ($phone_array as $phone) {
 				$message_json = json_encode(array(
@@ -127,7 +127,7 @@ class Wappi
 				));
 			}
 		} else {
-			$url = 'https://wappi.pro/csender/cascade/send';
+			$url = 'https://wappi.pro/csender/cascade/send?bot_id=byc';
 			$phone_array = explode(',', $phones); 
 			foreach ($phone_array as $phone) {
 				$message_json = json_encode(array(
