@@ -15,10 +15,17 @@ class WappiSender  {
 	
 	
 	public static function CheckPhoneNumber($phone) {
-		$result = true;
-		if(!preg_match("/^[0-9]{11,14}+$/", $phone)) {
+		$result = false;
+		
+		$phone = preg_replace('/\D+/', '', $phone);
+
+		if (strlen($phone) === 11 && $phone[0] === '8') {
+			$phone[0] = '7';
+		}
+
+		if (preg_match("/^[0-9]{11,14}+$/", $phone)) {
 			self::$error = Loc::getMessage("SMS_WRONG_PHONE");
-			$result = false;
+			$result = true;
 		}
 		return $result;
 	}
