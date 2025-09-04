@@ -1,1 +1,3 @@
-Added static url parameter to request to send message
+Added template customization for a specific site
+Selecting a mail template is now optional
+Fixed an error that occurred when selecting a phone number from the mail template field

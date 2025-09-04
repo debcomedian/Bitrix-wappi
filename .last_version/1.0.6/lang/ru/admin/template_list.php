@@ -19,3 +19,4 @@ $MESS["rub_no_rubric"] = "Нет такого шаблона";
 $MESS["POST_F_PHONE_TYPE_1"] = "поля почтового шаблона/номера телефона";
 $MESS["POST_F_PHONE_TYPE_2"] = "поля пользователя";
 $MESS["POST_F_PHONE_TYPE_3"] = "свойства заказа";
+$MESS["POST_F_SITE_ID"] = "Сайт";

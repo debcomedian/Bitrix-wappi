@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS wappipro_template
 	TIMESTAMP_CHANGE_X datetime,
 	EVENT_ID	int(11),
 	EVENT_MESSAGE_ID	int(11),
+	SITE_ID CHAR(2) NULL,
     PHONE_TYPE int(1) DEFAULT 1 NOT NULL,
 	PHONE varchar(255),
 	EVENT_TYPE varchar(255),

@@ -175,6 +175,11 @@ $lAdmin->AddHeaders(array(
     "sort"    => false,
     "default"  => true,
   ),
+  array(  "id"  =>"SITE_ID",
+    "content" =>Loc::getMessage("POST_F_SITE_ID"),
+    "sort"  =>false,
+    "default" =>true,
+  ),
   array(  "id"    =>"PHONE_TYPE",
     "content"  =>Loc::getMessage("POST_F_PHONE_TYPE"),
     "sort"    => false,
@@ -193,6 +198,11 @@ $lAdmin->AddHeaders(array(
 ));
 
 
+$siteRef = [];
+$rsSites = CSite::GetList($by="sort",$order="asc",[]);
+while($s = $rsSites->Fetch()){
+    $siteRef[$s['LID']] = '['.$s['LID'].'] '.$s['NAME'];
+}
 
 
 while($arRes = $rsData->NavNext(true, "f_")):
@@ -219,6 +229,13 @@ while($arRes = $rsData->NavNext(true, "f_")):
     if(CModule::IncludeModule('sale'))
         $s_PHONE_TYPE .= '<input type="radio" id="POST_F_PHONE_TYPE_3_'.$f_ID.'" name="FIELDS['.$f_ID.'][PHONE_TYPE]" value="3"  '.$check3.' />&nbsp;<label for="POST_F_PHONE_TYPE_3_'.$f_ID.'">'.Loc::getMessage("POST_F_PHONE_TYPE_3").'</label><br>';
 
+  $siteId = (string)($arRes['SITE_ID'] ?? $f_SITE_ID ?? '');
+  $siteTitle = '—';
+  if ($siteId !== '') {
+      $siteTitle = isset($siteRef[$siteId]) ? $siteRef[$siteId] : '['.$siteId.']';
+  }
+
+  $row->AddViewField('SITE_ID', htmlspecialcharsbx($siteTitle));
 	$row->AddViewField('EVENT_MESSAGE_ID', $f_EVENT_MESSAGE_NAME);
 	$row->AddEditField('PHONE_TYPE', $s_PHONE_TYPE);
 	$row->AddInputField("PHONE", array("size"=>20));

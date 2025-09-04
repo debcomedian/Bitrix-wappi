@@ -34,6 +34,9 @@ class WappiTemplate
 				case "EVENT_MESSAGE_ID":
 					$arSqlSearch[] = "T.EVENT_MESSAGE_ID = '".$val."'";
 					break;
+				case "SITE_ID":
+					$arSqlSearch[] = "T.SITE_ID = '".$val."'";
+					break;
 				case "PHONE_TYPE":
 					$arSqlSearch[] = "T.PHONE_TYPE = '".$val."'";
 					break;
@@ -62,7 +65,7 @@ class WappiTemplate
 		$strSqlSearch = GetFilterSqlSearch($arSqlSearch);
 		
 		$strSql =
-			"SELECT T.ID, T.ACTIVE,  T.EVENT_ID,  T.EVENT_TYPE, T.EVENT_MESSAGE_ID, T.PHONE, T.MESSAGE, T.PHONE_TYPE,
+			"SELECT T.ID, T.ACTIVE,  T.EVENT_ID,  T.EVENT_TYPE, T.EVENT_MESSAGE_ID, T.PHONE, T.MESSAGE, T.PHONE_TYPE, T.SITE_ID,
 			".$DB->DateToCharFunction("T.TIMESTAMP_CREATE_X").
 			" TIMESTAMP_CREATE_X, ".
 			$DB->DateToCharFunction("T.TIMESTAMP_CHANGE_X").
@@ -84,7 +87,7 @@ class WappiTemplate
 		$ID = intval($ID);
 
 		$strSql =
-			"SELECT T.ID, T.ACTIVE,  T.EVENT_ID,  T.EVENT_TYPE, T.EVENT_MESSAGE_ID, T.PHONE, T.MESSAGE, T.PHONE_TYPE,
+			"SELECT T.ID, T.ACTIVE,  T.EVENT_ID,  T.EVENT_TYPE, T.EVENT_MESSAGE_ID, T.PHONE, T.MESSAGE, T.PHONE_TYPE, T.SITE_ID,
 				".$DB->DateToCharFunction("T.TIMESTAMP_CREATE_X").
 				" TIMESTAMP_CREATE_X, ".
 				$DB->DateToCharFunction("T.TIMESTAMP_CHANGE_X").
@@ -108,10 +111,10 @@ class WappiTemplate
 			if(strlen($arFields["EVENT_TYPE"])<=0)
 				$aMsg[] = array("id"=>"EVENT_TYPE", "text"=>Loc::getMessage("CLASS_ERROR_EVENT_TYPE"));
 		}
-		if(array_key_exists("EVENT_MESSAGE_ID", $arFields))
-		{
-			if(strlen($arFields["EVENT_MESSAGE_ID"])<=0)
-				$aMsg[] = array("id"=>"EVENT_MESSAGE_ID", "text"=>Loc::getMessage("CLASS_ERROR_EVENT_MESSAGE_ID"));
+		if (array_key_exists("EVENT_MESSAGE_ID", $arFields) && (string)$arFields["EVENT_MESSAGE_ID"] !== "") {
+			if (!ctype_digit((string)$arFields["EVENT_MESSAGE_ID"])) {
+				$aMsg[] = ["id"=>"EVENT_MESSAGE_ID","text"=>Loc::getMessage("CLASS_ERROR_EVENT_MESSAGE_ID")];
+			}
 		}
         if(array_key_exists("PHONE_TYPE", $arFields))
 		{

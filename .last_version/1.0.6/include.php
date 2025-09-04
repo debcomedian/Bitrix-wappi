@@ -55,9 +55,53 @@ Class WappiProInclude
   public static function WappiBeforeEventAddHandler(&$event, &$lid, &$arFields, &$message_id)
 {
     try {
+
+        $siteIds = [];
+        if (is_array($lid)) {
+            $siteIds = array_values(array_filter($lid));
+        } elseif (is_string($lid) && $lid !== '') {
+            $siteIds = [$lid];
+        } elseif (!empty($arFields['SITE_ID'])) {
+            $siteIds = [(string)$arFields['SITE_ID']];
+        }
+
+        if (!empty($message_id)) {
+            $msgId = (int)$message_id;
+
+            $msgSites = [];
+            if (method_exists('CEventMessage', 'GetSite')) {
+                $rsSites = CEventMessage::GetSite($msgId);
+                if ($rsSites) {
+                    while ($ar = $rsSites->Fetch()) {
+                        if (!empty($ar['SITE_ID'])) {
+                            $msgSites[] = $ar['SITE_ID'];
+                        }
+                    }
+                }
+            }
+
+            if (empty($msgSites)) {
+                $em = CEventMessage::GetByID($msgId);
+                $emRow = $em ? $em->Fetch() : null;
+                if (!$emRow) {
+                    return true;
+                }
+                if (!empty($emRow['LID'])) {
+                    $msgSites[] = $emRow['LID'];
+                }
+            }
+
+            if (!empty($siteIds) && !empty($msgSites)) {
+                $intersect = array_intersect($siteIds, $msgSites);
+                if (empty($intersect)) {
+                    return true;
+                }
+            }
+        }
+
         $arFilter = [
             'EVENT_TYPE' => $event,
-            'ACTIVE' => 'Y'
+            'ACTIVE'     => 'Y'
         ];
         if (!empty($message_id)) {
             $arFilter['EVENT_MESSAGE_ID'] = $message_id;
@@ -68,19 +112,54 @@ Class WappiProInclude
             $phones = '';
             $text = $template['MESSAGE'];
 
+            if (!empty($template['SITE_ID']) && (empty($siteIds) || !in_array($template['SITE_ID'], $siteIds, true))) {
+                continue;
+            }
+
+
+            if (!empty($template['EVENT_MESSAGE_ID'])) {
+                $tplMsgId = (int)$template['EVENT_MESSAGE_ID'];
+                $tplMsgSites = [];
+
+                if (method_exists('CEventMessage', 'GetSite')) {
+                    $rsTplSites = CEventMessage::GetSite($tplMsgId);
+                    if ($rsTplSites) {
+                        while ($ar = $rsTplSites->Fetch()) {
+                            if (!empty($ar['SITE_ID'])) {
+                                $tplMsgSites[] = $ar['SITE_ID'];
+                            }
+                        }
+                    }
+                }
+
+                if (empty($tplMsgSites)) {
+                    $emTpl = CEventMessage::GetByID($tplMsgId);
+                    $emTplRow = $emTpl ? $emTpl->Fetch() : null;
+                    if (!$emTplRow) {
+                        continue;
+                    }
+                    if (!empty($emTplRow['LID'])) {
+                        $tplMsgSites[] = $emTplRow['LID'];
+                    }
+                }
+
+                if (!empty($siteIds) && !empty($tplMsgSites)) {
+                    $intersect = array_intersect($siteIds, $tplMsgSites);
+                    if (empty($intersect)) {
+                        continue;
+                    }
+                }
+            }
+
             switch ($template['PHONE_TYPE']) {
                 case 1:
                     if (WappiSender::CheckPhoneNumber($template['PHONE'])) {
                         $phones = $template['PHONE'];
                     } else {
-                        $code = trim($template['PHONE'], '#');
-                        if (preg_match('/#' . preg_quote($code, '/') . '#/', $template['MESSAGE'])) {
-                            if (isset($arFields[$code]) && !empty($arFields[$code])) {
-                                $phones = $arFields[$code];
-                                $text = str_replace('#' . $code . '#', '', $text);
-                            }
-                        } else {
-                            $phones = $template['PHONE'];
+                        $code = $template['PHONE'];
+                        if (isset($arFields[trim($code, '#')]) && !empty($arFields[trim($code, '#')])) {
+                            $phones = $arFields[trim($code, '#')];
+                            $text = str_replace($code, '', $text);
                         }
                     }
                     break;
@@ -185,6 +264,7 @@ Class WappiProInclude
   public static function WappiEventMessageDeleteHandler($message_id)
   {
     try {
+      $arFilter = [];
       if (!empty($message_id))
         $arFilter['EVENT_MESSAGE_ID'] = $message_id;
       $dbRes = WappiTemplate::GetList(array(), $arFilter);

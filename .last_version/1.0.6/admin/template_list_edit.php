@@ -20,7 +20,8 @@ $aTabs = array(
   array("DIV" => "edit1", "TAB" => Loc::getMessage("POST_F_PARAM"), "ICON"=>"main_user_edit", "TITLE"=>Loc::getMessage("POST_F_PARAM_TITLE"))
 );
 $tabControl = new CAdminTabControl("tabControl", $aTabs);
-$ID = intval($ID);		
+$ID = intval($ID);
+$SITE_ID = isset($_REQUEST['SITE_ID']) ? (string)$_REQUEST['SITE_ID'] : '';		
 $message = null;		
 $bVarsFromForm = false; 
 
@@ -42,11 +43,14 @@ if(
   $arFields = Array(
     "ACTIVE"  => ($ACTIVE <> "Y"? "N":"Y"),
     "EVENT_TYPE" => $EVENT_NAME,
-    "EVENT_MESSAGE_ID" => $EVENT_TEMPL,
+	  "SITE_ID" => $SITE_ID,
     "MESSAGE" => $MESSAGE,
     "PHONE" => $PHONE,
     "PHONE_TYPE" => $PHONE_TYPE
   );
+  if ((int)$EVENT_TEMPL > 0) {
+    $arFields["EVENT_MESSAGE_ID"] = (int)$EVENT_TEMPL;
+  }
 
   if($ID > 0)
   {
@@ -82,11 +86,24 @@ $str_TIMESTAMP_CREATE_X = ConvertTimeStamp(false, "FULL");
 $str_TIMESTAMP_CHANGE_X = ConvertTimeStamp(false, "FULL");
 $str_EVENT_ID = null;
 $str_EVENT_MESSAGE_ID = $EVENT_TEMPL;
+$str_SITE_ID = $SITE_ID;
 $str_PHONE = $PHONE;
 $str_PHONE_TYPE = $PHONE_TYPE;
 $str_EVENT_TYPE = $EVENT_NAME;
 $str_MESSAGE = $MESSAGE;
 
+$siteList = [];
+$defaultSiteId = '';
+$rsSites = CSite::GetList($by="sort", $order="asc", []);
+while ($arS = $rsSites->Fetch()) {
+    if ($arS['DEF'] === 'Y') {
+        $defaultSiteId = $arS['LID'];
+    }
+    $siteList[] = $arS;
+}
+if (empty($str_SITE_ID)) {
+    $str_SITE_ID = ($defaultSiteId !== '' ? $defaultSiteId : (isset($siteList[0]['LID']) ? $siteList[0]['LID'] : 's1'));
+}
 
 
 if($ID>0)
@@ -100,14 +117,12 @@ $bEvTpl = false;
 
 
 
-if($ID>0)
-{
-	$em = CEventMessage::GetByID($str_EVENT_MESSAGE_ID);
-	if(!$em->ExtractEditFields("evTpl_"))
-	{
-		$evTpl_MESSAGE = Loc::getMessage('ERROR_EVENT_TEMPL');
-		$bEvTpl = true;
-	}
+if ($ID>0 && (int)$str_EVENT_MESSAGE_ID>0) {
+    $em = CEventMessage::GetByID((int)$str_EVENT_MESSAGE_ID);
+    if ($em && !$em->ExtractEditFields("evTpl_")) {
+        $evTpl_MESSAGE = Loc::getMessage('ERROR_EVENT_TEMPL');
+        $bEvTpl = true;
+    }
 }
 
 
@@ -140,19 +155,27 @@ if(empty($EVENT_NAME))
 	$EVENT_NAME = $arEventType[0]['EVENT_NAME'];
 
 
-$event_templ_ref = array();
-$arEventTempl = array();
-$rstempl = CEventMessage::GetList($by="id", $order="asc", array('TYPE_ID' => $EVENT_NAME, 'ACTIVE' => 'Y'));
-while ($artempl = $rstempl->Fetch())
-{
-	$artempl["NAME"] = "[".$artempl['ID']."] ".$artempl['SUBJECT'];
-	$event_templ_ref[$artempl['ID']] = $artempl;
-	$arEventTempl[] = $artempl;
+$event_templ_ref = [];
+$arEventTempl = [];
+$templFilter = ['TYPE_ID'=>$EVENT_NAME,'ACTIVE'=>'Y'];
+if (!empty($str_SITE_ID)) { $templFilter['SITE_ID'] = $str_SITE_ID; }
+
+$rstempl = CEventMessage::GetList($by="id", $order="asc", $templFilter);
+while ($tpl = $rstempl->Fetch()) {
+    $tpl["NAME"] = "[".$tpl['ID']."] ".$tpl['SUBJECT']." (".$str_SITE_ID.")";
+    $event_templ_ref[(int)$tpl['ID']] = $tpl;
+    $arEventTempl[] = $tpl;
 }
 
-
-if(empty($EVENT_TEMPL_ID))
-	$EVENT_TEMPL_ID = $arEventTempl[0]['ID'];
+if (empty($arEventTempl)) {
+    $EVENT_TEMPL_ID = 0;
+    $messTemplate = '';
+} else {
+    if (!ctype_digit((string)$EVENT_TEMPL_ID) || !isset($event_templ_ref[(int)$EVENT_TEMPL_ID])) {
+        $EVENT_TEMPL_ID = 0;
+    }
+    $messTemplate = ($EVENT_TEMPL_ID>0) ? ($event_templ_ref[(int)$EVENT_TEMPL_ID]['MESSAGE'] ?? '') : '';
+}
 
 
 if($bVarsFromForm)
@@ -272,6 +295,38 @@ $tabControl->BeginNextTab();
   </tr>
   <?endif;?>
 	<tr>
+	<td><span class="required">*</span><?php echo Loc::getMessage("POST_F_SITE_ID"); ?></td>
+	<td>
+		<?php if ($ID>0 && $COPY_ID<=0): ?>
+  <?php
+    $siteTitle = '';
+    foreach ($siteList as $s) {
+      if ($s['LID'] === $str_SITE_ID) {
+        $siteTitle = '['.$s['LID'].'] '.$s['NAME'].($s['DEF']==='Y'?' '.Loc::getMessage("WAPPI_DEF_SITE"):'');
+        break;
+      }
+    }
+    if ($siteTitle==='') { $siteTitle = htmlspecialcharsbx($str_SITE_ID ?: '—'); }
+  ?>
+  <input type="hidden" name="SITE_ID" value="<?=htmlspecialcharsbx($str_SITE_ID)?>">
+  <b><?=htmlspecialcharsbx($siteTitle)?></b>
+<?php else: ?>
+  <select name="SITE_ID" id="SITE_ID" style="width:240px"
+          onchange="location='wappipro_template_list_edit.php?lang=<?=LANGUAGE_ID?>'
+                    + '&SITE_ID=' + this.value
+                    + '&EVENT_NAME=' + encodeURIComponent(document.getElementById('EVENT_NAME').value)">
+    <?php foreach ($siteList as $s):
+      $lid = htmlspecialcharsbx($s['LID']);
+      $nm  = htmlspecialcharsbx($s['NAME']);
+      $sel = ($str_SITE_ID === $s['LID']) ? ' selected' : '';
+    ?>
+      <option value="<?=$lid?>"<?=$sel?>>[<?=$lid?>] <?=$nm?><?=($s['DEF']==='Y'?' '.Loc::getMessage("WAPPI_DEF_SITE"):'')?></option>
+    <?php endforeach; ?>
+  </select>
+	<?php endif; ?>
+	</td>
+	</tr>
+	<tr>
 		<td><span class="required">*</span><?echo Loc::getMessage("EVENT_NAME")?></td>
 		<td><?
 			if($ID>0 && $COPY_ID<=0)
@@ -279,14 +334,17 @@ $tabControl->BeginNextTab();
 				$arType = $event_type_ref[$EVENT_NAME];
 				$type_DESCRIPTION = htmlspecialcharsbx($arType["DESCRIPTION"]);
 				$type_NAME = htmlspecialcharsbx($arType["NAME"]);
-				?><input type="hidden" name="EVENT_NAME" value="<? echo $EVENT_NAME?>"><b><?echo $type_NAME?></b><?
+				?><input type="hidden" id="EVENT_NAME" name="EVENT_NAME" value="<?=htmlspecialcharsbx($EVENT_NAME)?>">
+				<b><?=$type_NAME?></b><?
 			}
 			else
 			{
 				$id_1st = false;
 				?>
-				<select name="EVENT_NAME" style="width:470px" onChange="window.location='wappipro_template_list_edit.php?lang=<?=LANGUAGE_ID?>&EVENT_NAME='+this[this.selectedIndex].value">
-				<?
+				<select name="EVENT_NAME" id="EVENT_NAME" style="width:470px"
+        onchange="location='wappipro_template_list_edit.php?lang=<?=LANGUAGE_ID?>'
+                  + '&SITE_ID=' + document.getElementById('SITE_ID').value
+                  + '&EVENT_NAME=' + this.value"><?
 				foreach($event_type_ref as $ev_name=>$arType):
 					if($id_1st===false)
 						$id_1st = $ev_name;
@@ -310,39 +368,41 @@ $tabControl->BeginNextTab();
 		?>
 	</tr>
 	<tr>
-		<td><span class="required">*</span><?echo Loc::getMessage("EVENT_TEMPLATE")?></td>
+		<td><?echo Loc::getMessage("EVENT_TEMPLATE")?></td>
 		<td><?
 		
-			if($ID>0 && $COPY_ID<=0)
-			{
-				$artempl = $event_templ_ref[$EVENT_TEMPL_ID];
-				$templ_NAME = htmlspecialcharsbx($artempl["NAME"]);
-				$messTemplate = $artempl["MESSAGE"];
-				?><input type="hidden" name="EVENT_TEMPL" value="<? echo $EVENT_TEMPL_ID?>"><b><?echo $templ_NAME?></b><?
-			}
-			else
+      if ($ID>0 && $COPY_ID<=0) {
+          if ((int)$EVENT_TEMPL_ID>0 && isset($event_templ_ref[$EVENT_TEMPL_ID])) {
+              $templ_NAME = htmlspecialcharsbx($event_templ_ref[$EVENT_TEMPL_ID]["NAME"]);
+              echo '<input type="hidden" name="EVENT_TEMPL" value="'.(int)$EVENT_TEMPL_ID.'"><b>'.$templ_NAME.'</b>';
+          } else {
+              echo '<input type="hidden" name="EVENT_TEMPL" value="0"><b>—</b>';
+          }
+      }	else
 			{
 				//$id_1st = false;
 				?>
-				<select name="EVENT_TEMPL" style="width:470px" onChange="window.location='wappipro_template_list_edit.php?lang=<?=LANGUAGE_ID?>&EVENT_NAME=<?=$EVENT_NAME?>&EVENT_TEMPL='+this[this.selectedIndex].value">
-				<?
-				foreach($event_templ_ref as $ev_name=>$artempl):
-					//if($id_1st===false)
-					//	$id_1st = $ev_name;
-				?>
-					<option value="<?=htmlspecialcharsbx($artempl["ID"])?>"<?
-					if($EVENT_TEMPL_ID==$artempl["ID"])
-					{
-						echo " selected";
-						//$id_1st = $ev_name;
-						$messTemplate = $artempl["MESSAGE"];
-					}
-					?>><?=htmlspecialcharsbx($artempl["NAME"])?></option>
-				<?
-				endforeach;
-				?>
-				</select>
-				<?
+				<?php if ($ID>0 && $COPY_ID<=0): ?>
+          <?php if ((int)$EVENT_TEMPL_ID>0 && isset($event_templ_ref[(int)$EVENT_TEMPL_ID])): 
+                $templ_NAME = htmlspecialcharsbx($event_templ_ref[(int)$EVENT_TEMPL_ID]["NAME"]); ?>
+            <input type="hidden" name="EVENT_TEMPL" value="<?= (int)$EVENT_TEMPL_ID ?>"><b><?= $templ_NAME ?></b>
+          <?php else: ?>
+            <input type="hidden" name="EVENT_TEMPL" value="0"><b>—</b>
+          <?php endif; ?>
+        <?php else: ?>
+          <select name="EVENT_TEMPL" id="EVENT_TEMPL" style="width:470px"
+                  onchange="location='wappipro_template_list_edit.php?lang=<?=LANGUAGE_ID?>'
+                            + '&SITE_ID=' + document.getElementById('SITE_ID').value
+                            + '&EVENT_NAME=' + document.getElementById('EVENT_NAME').value
+                            + '&EVENT_TEMPL=' + this.value">
+            <option value="0"<?= ((int)$EVENT_TEMPL_ID===0?' selected':'') ?>>—</option>
+            <?php foreach ($event_templ_ref as $tpl): ?>
+              <option value="<?= (int)$tpl['ID'] ?>"<?= ((int)$EVENT_TEMPL_ID===(int)$tpl['ID']?' selected':'') ?>>
+                [<?= (int)$tpl['ID'] ?>] <?= htmlspecialcharsbx($tpl['SUBJECT']) ?> (<?= htmlspecialcharsbx($str_SITE_ID) ?>)
+              </option>
+            <?php endforeach; ?>
+          </select>
+        <?php endif;
 				//$templ_DESCRIPTION = htmlspecialcharsbx($event_templ_ref[$id_1st]["DESCRIPTION"]);
 			}
 		?></td>

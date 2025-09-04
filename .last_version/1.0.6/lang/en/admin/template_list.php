@@ -19,3 +19,4 @@ $MESS["rub_no_rubric"] = "No such template";
 $MESS["POST_F_PHONE_TYPE_1"] = "mail template fields/ phone number";
 $MESS["POST_F_PHONE_TYPE_2"] = "user fields";
 $MESS["POST_F_PHONE_TYPE_3"] = "order properties";
+$MESS["POST_F_SITE_ID"] = "Site";
