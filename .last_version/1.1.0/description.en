@@ -1,3 +1,1 @@
-Added template customization for a specific site
-Selecting a mail template is now optional
-Fixed an error that occurred when selecting a phone number from the mail template field
+Fixed db table error in 1.1.0
