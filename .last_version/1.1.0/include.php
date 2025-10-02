@@ -1,6 +1,7 @@
 <?php
 
 use Bitrix\Main\Localization\Loc;
+use Bitrix\Main\Data\Cache;
 
 Loc::loadMessages(__FILE__);
 $MODULE_ID = 'wappi.whatsapptelegram';
@@ -12,15 +13,47 @@ CModule::AddAutoloadClasses(
 );
 require_once dirname(__FILE__).'/classes/general/wappi_sender.php';
 
-
 Class WappiProInclude
 {
+    private static $processed = [];
+
+    private static function businessKey($event, $lid, $arFields, $messageId = null)
+    {
+        $lidStr = is_array($lid) ? implode(',', array_filter($lid)) : (string)$lid;
+
+        $entity = '';
+        if (is_array($arFields)) {
+            if (!empty($arFields['ORDER_REAL_ID'])) $entity = 'ORD:'.$arFields['ORDER_REAL_ID'];
+            elseif (!empty($arFields['ORDER_ID']))  $entity = 'ORD:'.$arFields['ORDER_ID'];
+            elseif (!empty($arFields['EMAIL']))     $entity = 'EML:'.$arFields['EMAIL'];
+            elseif (!empty($arFields['EMAIL_TO']))  $entity = 'EML:'.(is_array($arFields['EMAIL_TO']) ? reset($arFields['EMAIL_TO']) : (string)$arFields['EMAIL_TO']);
+            elseif (!empty($arFields['LOGIN']))     $entity = 'LGN:'.$arFields['LOGIN'];
+        }
+        if ($entity === '') $entity = 'MID:'.(string)$messageId;
+
+        return md5((string)$event.'|'.$lidStr.'|'.$entity);
+    }
+
+    private static function dedupeHit($sig, $ttl = 90)
+    {
+        if (isset(self::$processed[$sig])) { return true; }
+        self::$processed[$sig] = 1;
+
+        if ($ttl > 0) {
+            $cache = Cache::createInstance();
+            $dir = '/wappi_dedupe';
+            if ($cache->initCache($ttl, $sig, $dir)) { return true; }
+            if ($cache->startDataCache()) { $cache->endDataCache(['ts'=>time()]); }
+        }
+        return false;
+    }
+
   public static function OnBuildGlobalMenu(&$aGlobalMenu, &$aModuleMenu)
   {
     try {
       if ($GLOBALS['APPLICATION']->GetGroupRight("main") < "R")
         return true;
-  
+
       $MODULE_ID = 'wappi.whatsapptelegram';
       $aMenu = array(
         "parent_menu" => "global_menu_services",
@@ -51,9 +84,12 @@ Class WappiProInclude
       return true;
     }
   }
-  
+
   public static function WappiBeforeEventAddHandler(&$event, &$lid, &$arFields, &$message_id)
-{
+  {
+    $sig = self::businessKey($event, $lid, $arFields, $message_id);
+    if (self::dedupeHit($sig, 90)) { return true; }
+
     try {
 
         $siteIds = [];
@@ -99,16 +135,34 @@ Class WappiProInclude
             }
         }
 
-        $arFilter = [
-            'EVENT_TYPE' => $event,
-            'ACTIVE'     => 'Y'
-        ];
-        if (!empty($message_id)) {
-            $arFilter['EVENT_MESSAGE_ID'] = $message_id;
-        }
-        $dbTemplates = WappiTemplate::GetList([], $arFilter);
+        $templates = array();
+        $seenIds   = array();
 
-        while ($template = $dbTemplates->Fetch()) {
+        if (!empty($message_id)) {
+            $arFilter1 = array(
+                'EVENT_TYPE' => $event,
+                'ACTIVE'     => 'Y',
+                'EVENT_MESSAGE_ID' => $message_id,
+            );
+            $db1 = WappiTemplate::GetList(array(), $arFilter1);
+            while ($t = $db1->Fetch()) {
+                $templates[] = $t;
+                if (!empty($t['ID'])) { $seenIds[(int)$t['ID']] = 1; }
+            }
+        }
+
+        $arFilter2 = array(
+            'EVENT_TYPE' => $event,
+            'ACTIVE'     => 'Y',
+        );
+        $db2 = WappiTemplate::GetList(array(), $arFilter2);
+        while ($t = $db2->Fetch()) {
+            $tid = !empty($t['ID']) ? (int)$t['ID'] : 0;
+            if ($tid && isset($seenIds[$tid])) { continue; }
+            $templates[] = $t;
+        }
+
+        foreach ($templates as $template) {
             $phones = '';
             $text = $template['MESSAGE'];
 
@@ -116,38 +170,9 @@ Class WappiProInclude
                 continue;
             }
 
-
-            if (!empty($template['EVENT_MESSAGE_ID'])) {
-                $tplMsgId = (int)$template['EVENT_MESSAGE_ID'];
-                $tplMsgSites = [];
-
-                if (method_exists('CEventMessage', 'GetSite')) {
-                    $rsTplSites = CEventMessage::GetSite($tplMsgId);
-                    if ($rsTplSites) {
-                        while ($ar = $rsTplSites->Fetch()) {
-                            if (!empty($ar['SITE_ID'])) {
-                                $tplMsgSites[] = $ar['SITE_ID'];
-                            }
-                        }
-                    }
-                }
-
-                if (empty($tplMsgSites)) {
-                    $emTpl = CEventMessage::GetByID($tplMsgId);
-                    $emTplRow = $emTpl ? $emTpl->Fetch() : null;
-                    if (!$emTplRow) {
-                        continue;
-                    }
-                    if (!empty($emTplRow['LID'])) {
-                        $tplMsgSites[] = $emTplRow['LID'];
-                    }
-                }
-
-                if (!empty($siteIds) && !empty($tplMsgSites)) {
-                    $intersect = array_intersect($siteIds, $tplMsgSites);
-                    if (empty($intersect)) {
-                        continue;
-                    }
+            if (!empty($template['EVENT_MESSAGE_ID']) && !empty($message_id)) {
+                if ((int)$template['EVENT_MESSAGE_ID'] !== (int)$message_id) {
+                    continue;
                 }
             }
 
@@ -157,9 +182,13 @@ Class WappiProInclude
                         $phones = $template['PHONE'];
                     } else {
                         $code = $template['PHONE'];
-                        if (isset($arFields[trim($code, '#')]) && !empty($arFields[trim($code, '#')])) {
-                            $phones = $arFields[trim($code, '#')];
-                            $text = str_replace($code, '', $text);
+                        $key  = trim($code, "# \t\n\r\0\x0B");
+
+                        if ($key !== '' && array_key_exists($key, $arFields) && $arFields[$key] !== '') {
+                            $val = $arFields[$key];
+                            $phones = is_array($val) ? implode(',', $val) : (string)$val;
+                        } else {
+                            $phones = $template['PHONE'];
                         }
                     }
                     break;
@@ -194,6 +223,28 @@ Class WappiProInclude
                             }
                         } else {
                             $phones = $template['PHONE'];
+                        }
+                    } elseif (!empty($arFields['EMAIL_TO'])) {
+                        $emailTo = $arFields['EMAIL_TO'];
+                        if (is_array($emailTo)) { $emailTo = reset($emailTo); }
+                        if (is_string($emailTo)) {
+                            if (preg_match('/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i', $emailTo, $m)) {
+                                $emailClean = $m[0];
+                                $user = CUser::GetList($by = "id", $order = "desc", array('EMAIL' => $emailClean))->Fetch();
+                                if ($user) {
+                                    if (!empty($user['PERSONAL_PHONE'])) {
+                                        $phones = $user['PERSONAL_PHONE'];
+                                    } elseif (!empty($user['PERSONAL_MOBILE'])) {
+                                        $phones = $user['PERSONAL_MOBILE'];
+                                    } elseif (!empty($user['WORK_PHONE'])) {
+                                        $phones = $user['WORK_PHONE'];
+                                    } else {
+                                        $phones = $template['PHONE'];
+                                    }
+                                } else {
+                                    $phones = $template['PHONE'];
+                                }
+                            }
                         }
                     } elseif (!empty($arFields['LOGIN'])) {
                         $user = CUser::GetList($by = "id", $order = "desc", ['LOGIN' => $arFields['LOGIN']])->Fetch();
@@ -234,7 +285,7 @@ Class WappiProInclude
 
             if ($phones) {
                 $phoneArray = explode(',', $phones);
-                $cleanPhones = [];
+                $cleanPhones = array();
                 foreach ($phoneArray as $phone) {
                     $phone = trim($phone);
                     $phone = preg_replace("/[^0-9]/", "", $phone);
@@ -255,11 +306,73 @@ Class WappiProInclude
                 WappiSender::SendSMS($phones, $text);
             }
         }
-    } catch (Exception $e) {
     } finally {
         return true;
     }
-}
+  }
+
+  public static function WappiBeforeEventSendHandler()
+  {
+    try {
+        $args = func_get_args();
+
+        $event = '';
+        $lid = '';
+        $arFields = [];
+        $messageId = null;
+
+        $argIndex = 0;
+        foreach ($args as $arg) {
+            if (is_array($arg)) {
+                if (isset($arg['EVENT_NAME']) && is_string($arg['EVENT_NAME'])) {
+                    $event = (string)$arg['EVENT_NAME'];
+                }
+                if (isset($arg['C_FIELDS']) && is_array($arg['C_FIELDS'])) {
+                    $arFields = $arg['C_FIELDS'];
+                }
+                if (isset($arg['FIELDS']) && is_array($arg['FIELDS']) && empty($arFields)) {
+                    $arFields = $arg['FIELDS'];
+                }
+                if (empty($arFields) && !isset($arg['EVENT_NAME']) && !(isset($arg['ID']) && isset($arg['LID']))) {
+                    $arFields = $arg;
+                }
+                if (isset($arg['LID']) && $arg['LID'] !== '') {
+                    $lid = $arg['LID'];
+                }
+                if (isset($arg['SITE_ID']) && $arg['SITE_ID'] !== '' && $lid === '') {
+                    $lid = $arg['SITE_ID'];
+                }
+                if (isset($arg['MESSAGE_ID']) && $arg['MESSAGE_ID'] !== '') {
+                    $messageId = $arg['MESSAGE_ID'];
+                }
+                if (isset($arg['ID']) && $messageId === null && ctype_digit((string)$arg['ID'])) {
+                    $messageId = (int)$arg['ID'];
+                }
+            } elseif (is_string($arg)) {
+                if ($event === '') {
+                    $event = $arg;
+                } elseif ($lid === '') {
+                    $lid = $arg;
+                }
+            } elseif (is_int($arg) || (is_string($arg) && ctype_digit($arg))) {
+                if ($messageId === null) {
+                    $messageId = (int)$arg;
+                }
+            }
+            $argIndex++;
+        }
+
+        if (empty($event)) {
+            return true;
+        }
+
+        if (is_array($arFields)) { $arFields['__WAPPI_SRC'] = 'd7'; }
+
+        return self::WappiBeforeEventAddHandler($event, $lid, $arFields, $messageId);
+    } finally {
+        return true;
+    }
+  }
 
   public static function WappiEventMessageDeleteHandler($message_id)
   {

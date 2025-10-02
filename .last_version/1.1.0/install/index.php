@@ -75,7 +75,8 @@ class wappi_whatsapptelegram extends CModule
             return false;
         } else {
             RegisterModuleDependences('main', 'OnBuildGlobalMenu', $this->MODULE_ID, 'WappiProInclude', 'OnBuildGlobalMenu');
-            RegisterModuleDependences('main', 'OnBeforeEventAdd', $this->MODULE_ID, 'WappiProInclude', 'WappiBeforeEventAddHandler');
+            RegisterModuleDependences('main', 'OnBeforeEventAdd', $this->MODULE_ID, 'WappiProInclude', 'WappiBeforeEventAddHandler', 100);
+            RegisterModuleDependences('main', 'OnBeforeEventSend', $this->MODULE_ID, 'WappiProInclude', 'WappiBeforeEventSendHandler', 90);
             RegisterModuleDependences('main', 'OnEventMessageDelete', $this->MODULE_ID, 'WappiProInclude', 'WappiEventMessageDeleteHandler');
 
             $this->SetDefaultRights();
@@ -115,8 +116,9 @@ class wappi_whatsapptelegram extends CModule
 		}
 		
 		UnRegisterModuleDependences('main', 'OnBuildGlobalMenu', $this->MODULE_ID, 'WappiProInclude', 'OnBuildGlobalMenu');
-		UnRegisterModuleDependences('main', 'OnBeforeEventAdd', $this->MODULE_ID, 'WappiProInclude', 'SmsisBeforeEventAddHandler');
-		UnRegisterModuleDependences('main', 'OnEventMessageDelete', $this->MODULE_ID, 'WappiProInclude', 'SmsisEventMessageDeleteHandler');
+        UnRegisterModuleDependences('main', 'OnBeforeEventAdd', $this->MODULE_ID, 'WappiProInclude', 'WappiBeforeEventAddHandler');
+        UnRegisterModuleDependences('main', 'OnBeforeEventSend', $this->MODULE_ID, 'WappiProInclude', 'WappiBeforeEventSendHandler');
+        UnRegisterModuleDependences('main', 'OnEventMessageDelete', $this->MODULE_ID, 'WappiProInclude', 'WappiEventMessageDeleteHandler');
 		        
 		if($this->errors !== false){
 			$APPLICATION->ThrowException(implode("<br>", $this->errors));

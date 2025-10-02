@@ -1,1 +1,1 @@
-Fixed db table error in 1.1.0
+Expanded module capabilities when working with new OnBeforeEventSend event
