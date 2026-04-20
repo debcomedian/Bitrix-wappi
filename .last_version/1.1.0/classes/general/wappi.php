@@ -187,7 +187,7 @@ class Wappi
 				$result_string = Loc::getMessage("WAPPI_JSON_ERROR") . json_last_error_msg() . '</span>';
 			} else if (sizeof($data) > 2) {
 				$platform = $data['platform'];
-				$platform = ($platform === 'tg')? 't': '';
+				$platform = ($platform === 'tg') ? 't' : (($platform === 'max') ? $platform : '');
 				COption::SetOptionString('wappipro', 'platform', $platform);
 				$result_string = $this->_parse_time($data);
 			} else if (strlen($this->profile_id) == 20) {
@@ -257,6 +257,9 @@ class Wappi
                     case 'tg':
                         $platform_display = 'Telegram';
                         break;
+                    case 'max':
+                      $platform_display = 'MAX';
+                      break;
                     case 'sms':
                         $platform_display = Loc::getMessage('SMS');
                         break;
